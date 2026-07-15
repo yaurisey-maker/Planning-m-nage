@@ -108,6 +108,16 @@
     font-size:13px; color:#6b5320; margin:10px 0}
   .setup b{color:#5a4415}
 
+  .modal{display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5);
+    z-index:1000; align-items:center; justify-content:center}
+  .modal.active{display:flex}
+  .modal-box{background:var(--white); border-radius:16px; padding:24px; max-width:400px; width:90%;
+    box-shadow:0 10px 40px rgba(2,80,92,0.2)}
+  .modal-title{font-size:18px; font-weight:800; color:var(--deep); margin:0 0 12px}
+  .modal-text{font-size:14px; color:var(--ink); line-height:1.6; margin:0 0 20px}
+  .modal-btns{display:flex; gap:10px; justify-content:flex-end}
+  .modal-btns .btn{flex:1; text-align:center}
+
   .people-row{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:12px; padding-top:12px; border-top:1px solid var(--line)}
   .people-row label{font-size:13px; font-weight:600; color:var(--grey)}
   .people-row input[type=text]{border:1px solid var(--line); background:var(--white); border-radius:6px;
@@ -166,6 +176,18 @@
   </section>
 
   <p class="hint" id="hint">Les saisies se synchronisent automatiquement entre tous les appareils connectés.</p>
+</div>
+
+<!-- Modal de confirmation -->
+<div class="modal" id="confirm-modal">
+  <div class="modal-box">
+    <h3 class="modal-title">Êtes-vous sûr ?</h3>
+    <p class="modal-text">Vous allez supprimer toutes les saisies. Cette action est irréversible.</p>
+    <div class="modal-btns">
+      <button class="btn" id="modal-cancel">Annuler</button>
+      <button class="btn danger" id="modal-confirm">Tout effacer</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -370,17 +392,31 @@
 
   /* ---- Toolbar ---- */
   document.getElementById("btn-print").addEventListener("click", function(){ window.print(); });
+  var modalEl = document.getElementById("confirm-modal");
+  var modalCancel = document.getElementById("modal-cancel");
+  var modalConfirm = document.getElementById("modal-confirm");
+
   document.getElementById("btn-reset").addEventListener("click", function(){
-    var msg = CONFIGURED
-      ? "Effacer toutes les saisies PARTAGÉES (pour tout le monde) ? Action irréversible."
-      : "Effacer toutes les saisies de cet appareil ? Action irréversible.";
-    if(!confirm(msg)) return;
+    modalEl.classList.add("active");
+  });
+
+  modalCancel.addEventListener("click", function(){
+    modalEl.classList.remove("active");
+  });
+
+  modalConfirm.addEventListener("click", function(){
+    modalEl.classList.remove("active");
     fieldEls().forEach(function(el){
       if(el.type === "checkbox") el.checked = false; else el.value = "";
       localEdit[el.id] = Date.now();
       if(CONFIGURED) cloudPush(el.id);
     });
     try{ localStorage.removeItem(STORE_KEY); }catch(e){}
+  });
+
+  // Fermer modal en cliquant sur le fond
+  modalEl.addEventListener("click", function(e){
+    if(e.target === modalEl) modalEl.classList.remove("active");
   });
 
   /* ---- Init ---- */
