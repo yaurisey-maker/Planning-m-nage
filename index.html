@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Planning ménage — Zone B · Suivi &amp; émargement (partagé)</title>
+<style>
+  :root{
+    --teal:#028090; --deep:#02505C; --mint:#E6F5F3; --mint2:#F4FBFA;
+    --line:#9DC3C7; --ink:#20353A; --grey:#5C7378; --white:#fff; --ok:#00A896;
+    --warn:#C08A2E; --err:#C0564B;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0; background:var(--mint2); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; line-height:1.4}
+  .wrap{max-width:1000px; margin:0 auto; padding:20px 16px 60px}
+
+  header.masthead h1{font-size:26px; font-weight:800; color:var(--deep); margin:0 0 2px; letter-spacing:-.3px}
+  .masthead .sub{color:var(--teal); font-weight:600; font-size:15px}
+  .meta{display:flex; flex-wrap:wrap; gap:10px 22px; align-items:center;
+    margin-top:12px; padding-bottom:12px; border-bottom:1px solid var(--line)}
+  .meta label{font-size:14px; font-weight:600}
+  .meta input[type=text]{border:none; border-bottom:1.5px solid var(--line); background:transparent;
+    font-size:14px; padding:3px 4px; width:120px; color:var(--ink)}
+  .meta input:focus{outline:none; border-bottom-color:var(--teal)}
+  .rot{font-size:13px; color:var(--grey)} .rot b{color:var(--deep)}
+
+  .toolbar{position:sticky; top:0; z-index:20; background:var(--mint2);
+    display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:10px 0; margin-bottom:6px}
+  .btn{border:1.5px solid var(--teal); background:var(--white); color:var(--teal);
+    font-size:13px; font-weight:600; padding:7px 12px; border-radius:8px; cursor:pointer;
+    display:inline-flex; align-items:center; gap:6px}
+  .btn:hover{background:var(--mint)}
+  .btn.primary{background:var(--teal); color:var(--white)}
+  .btn.primary:hover{background:var(--deep); border-color:var(--deep)}
+  .btn.danger{border-color:var(--err); color:var(--err)}
+  .btn.danger:hover{background:#FBECEA}
+
+  .status{margin-left:auto; display:inline-flex; align-items:center; gap:6px;
+    font-size:12.5px; font-weight:600; padding:5px 10px; border-radius:20px; white-space:nowrap}
+  .dot{width:8px; height:8px; border-radius:50%; background:currentColor; flex:0 0 auto}
+  .status.local{color:var(--grey); background:#EEF3F3}
+  .status.ok{color:var(--ok); background:#E4F6F2}
+  .status.warn{color:var(--warn); background:#FBF1DE}
+  .status.err{color:var(--err); background:#FBECEA}
+  .status.syncing .dot{animation:pulse 1s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+  .month{margin:18px 0}
+  .month-head{display:flex; flex-wrap:wrap; align-items:baseline; gap:6px 10px; margin-bottom:6px}
+  .month-head .n{font-weight:800; color:var(--deep); font-size:16px}
+  .month-head input[type=text]{border:none; border-bottom:1.5px solid var(--line); background:transparent;
+    font-size:14px; padding:2px 4px; min-width:160px; flex:1 1 160px; max-width:260px; color:var(--ink)}
+  .month-head input:focus{outline:none; border-bottom-color:var(--teal)}
+
+  .tbl-scroll{overflow-x:auto; -webkit-overflow-scrolling:touch; border-radius:10px}
+  table{border-collapse:collapse; width:100%; min-width:640px; background:var(--white);
+    border:1px solid var(--line); border-radius:10px; overflow:hidden}
+  thead th{background:var(--teal); color:var(--white); font-size:12.5px; font-weight:700; padding:8px 10px; text-align:left}
+  th.c-sem,th.c-pers{text-align:center}
+  tbody td{border-top:1px solid var(--line); padding:5px 8px; vertical-align:middle}
+  tbody tr:nth-child(even){background:var(--mint)}
+  td.sem{font-size:13px; color:var(--grey); text-align:center; white-space:nowrap; width:70px}
+  td.pers{text-align:center; width:74px}
+  .badge{display:inline-block; min-width:30px; padding:3px 8px; border-radius:20px;
+    background:var(--deep); color:var(--white); font-weight:700; font-size:13px}
+  td input.field{width:100%; border:1px solid transparent; background:transparent; border-radius:6px;
+    font-size:13.5px; padding:6px 7px; color:var(--ink); font-family:inherit}
+  td input.field::placeholder{color:#A9C3C7}
+  td input.field:hover{border-color:var(--line)}
+  td input.field:focus{outline:none; border-color:var(--teal); background:var(--white)}
+  td.date{width:150px} td.emarge{width:150px}
+  .field.flash{animation:flash 1.1s ease}
+  @keyframes flash{0%{background:#FFF6D6}100%{background:transparent}}
+
+  .ref{margin-top:26px; background:var(--white); border:1px solid var(--line); border-radius:12px; padding:16px 18px}
+  .ref h2{font-size:16px; color:var(--deep); margin:0 0 12px}
+  .ref-cols{display:grid; grid-template-columns:1fr 1fr; gap:10px 28px}
+  .cat{margin-bottom:12px} .cat h3{font-size:13.5px; color:var(--deep); margin:0 0 4px}
+  .task{display:flex; align-items:flex-start; gap:8px; padding:2px 0; font-size:13.5px}
+  .task input[type=checkbox]{appearance:none; -webkit-appearance:none; width:16px; height:16px; margin-top:1px;
+    border:1.5px solid var(--grey); border-radius:4px; cursor:pointer; flex:0 0 auto; position:relative; background:var(--white)}
+  .task input[type=checkbox]:checked{background:var(--teal); border-color:var(--teal)}
+  .task input[type=checkbox]:checked::after{content:""; position:absolute; left:4.5px; top:1px; width:4px; height:8px;
+    border:solid var(--white); border-width:0 2px 2px 0; transform:rotate(45deg)}
+  .task label{cursor:pointer}
+  .task input:checked + label{color:var(--grey); text-decoration:line-through}
+  .foot-tip{margin-top:10px; font-size:12.5px; color:var(--grey)}
+  .hint{font-size:12.5px; color:var(--grey); margin:8px 2px 0}
+  .setup{background:#FBF1DE; border:1px solid #E6CE97; border-radius:10px; padding:12px 14px;
+    font-size:13px; color:#6b5320; margin:10px 0}
+  .setup b{color:#5a4415}
+
+  @media (max-width:560px){ .ref-cols{grid-template-columns:1fr} .masthead h1{font-size:22px} }
+  @media print{
+    body{background:#fff}
+    .toolbar,.hint,.setup{display:none !important}
+    .wrap{max-width:none; padding:0}
+    table{min-width:0} .tbl-scroll{overflow:visible}
+    .month,.ref{break-inside:avoid}
+    td input.field{border-color:transparent}
+    thead th{-webkit-print-color-adjust:exact; print-color-adjust:exact}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="masthead">
+    <h1>Planning ménage — Suivi &amp; émargement</h1>
+    <div class="sub">Zone B · Salle de bain &amp; WC · 6 mois</div>
+    <div class="meta">
+      <span><label for="annee">Année :</label>
+        <input type="text" id="annee" data-persist placeholder="2026" /></span>
+      <span class="rot"><b>Rotation :</b> YE → YA → AE → RE → SE <span style="color:var(--grey)">(décalée chaque mois)</span></span>
+    </div>
+  </header>
+
+  <div id="setup-note" class="setup" hidden>
+    <b>Mode local (non partagé).</b> Pour que tout le monde voie les mêmes saisies, renseignez vos 2 clés Supabase
+    en haut du fichier (voir les instructions fournies avec ce fichier).
+  </div>
+
+  <div class="toolbar">
+    <button class="btn primary" id="btn-print" type="button">🖨️ Imprimer</button>
+    <button class="btn" id="btn-export" type="button">⬇️ Exporter</button>
+    <button class="btn" id="btn-import" type="button">⬆️ Importer</button>
+    <input type="file" id="file-import" accept="application/json" hidden />
+    <button class="btn danger" id="btn-reset" type="button">Tout effacer</button>
+    <span class="status local" id="status"><span class="dot"></span><span id="status-txt">Local</span></span>
+  </div>
+
+  <div id="months"></div>
+
+  <section class="ref">
+    <h2>Tâches à faire (rappel)</h2>
+    <div class="ref-cols" id="tasks"></div>
+    <div class="foot-tip">Ordre conseillé : du plus propre au plus sale (lavabo → surfaces → cuvette → sol). Chiffon dédié WC.</div>
+  </section>
+
+  <p class="hint" id="hint">Les saisies se synchronisent automatiquement entre tous les appareils connectés.</p>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* =======================================================================
+     CONFIGURATION — remplacez les 2 valeurs ci-dessous par vos clés Supabase.
+     (Tableau de bord Supabase → Project Settings → API)
+     Tant qu'elles ne sont pas renseignées, la page fonctionne en mode local.
+     ======================================================================= */
+  var SUPABASE_URL      = "https://VOTRE-PROJET.supabase.co";
+  var SUPABASE_ANON_KEY = "VOTRE_CLE_ANON_PUBLIC";
+  /* ======================================================================= */
+
+  var TABLE = "planning";
+  var STORE_KEY = "planning-menage-zoneB-6mois-v2";
+  var PEOPLE = ["YE","YA","AE","RE","SE"];
+  var WEEKS = 5, MONTHS = 6;
+
+  var TASK_CATS = [
+    ["Lavabo & robinetterie", ["Lavabo (cuve, rebords, trop-plein)","Robinets, mitigeur, poignées","Bonde et siphon","Miroir + tablette"]],
+    ["WC", ["Cuvette (intérieur + sous le rebord)","Abattant (dessus ET dessous)","Extérieur + pied de la cuvette","Bouton de chasse","Balai WC + support"]],
+    ["Douche / baignoire", ["Parois vitrées (anticalcaire)","Bac / fond / baignoire","Robinet, pommeau, flexible, barre","Joints + porte-savon"]],
+    ["Sols", ["Balayage puis lavage","Contour des pieds de WC","Plinthes"]],
+    ["Vitres & surfaces", ["Fenêtre / vitres","Interrupteurs, poignées","Sèche-serviette / radiateur"]],
+    ["Finitions", ["Vider la poubelle + sac","Réassort PQ, savon, essuie-mains","Poussière en hauteur"]]
+  ];
+
+  var CONFIGURED = /^https:\/\//.test(SUPABASE_URL) && SUPABASE_URL.indexOf("VOTRE-") === -1 &&
+                   SUPABASE_ANON_KEY && SUPABASE_ANON_KEY.indexOf("VOTRE_") === -1;
+
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]; }); }
+  function rotationFor(month){ var off=(month-1)%PEOPLE.length; return PEOPLE.slice(off).concat(PEOPLE.slice(0,off)); }
+
+  /* ---- Build month tables ---- */
+  var monthsHost = document.getElementById("months");
+  for(var m=1; m<=MONTHS; m++){
+    var rot = rotationFor(m), rows = "";
+    for(var w=1; w<=WEEKS; w++){
+      var base = "m"+m+"w"+w;
+      rows +=
+        "<tr>"+
+          "<td class='sem'>Sem. "+w+"</td>"+
+          "<td class='pers'><span class='badge'>"+rot[w-1]+"</span></td>"+
+          "<td class='date'><input class='field' type='text' id='"+base+"_date' data-persist placeholder='jj/mm'></td>"+
+          "<td class='emarge'><input class='field' type='text' id='"+base+"_emarge' data-persist placeholder='initiales'></td>"+
+          "<td class='comment'><input class='field' type='text' id='"+base+"_comment' data-persist placeholder='—'></td>"+
+        "</tr>";
+    }
+    var sec = document.createElement("section");
+    sec.className = "month";
+    sec.innerHTML =
+      "<div class='month-head'><span class='n'>Mois "+m+" :</span>"+
+        "<input type='text' id='m"+m+"name' data-persist placeholder='nom du mois'></div>"+
+      "<div class='tbl-scroll'><table><thead><tr>"+
+        "<th class='c-sem'>Semaine</th><th class='c-pers'>Personne</th>"+
+        "<th>Réalisé le</th><th>Émargement</th><th>Commentaire</th>"+
+      "</tr></thead><tbody>"+rows+"</tbody></table></div>";
+    monthsHost.appendChild(sec);
+  }
+
+  /* ---- Build tasks ---- */
+  var tasksHost = document.getElementById("tasks");
+  TASK_CATS.forEach(function(cat, ci){
+    var items = cat[1].map(function(txt, ii){
+      var id = "task_c"+ci+"_i"+ii;
+      return "<div class='task'><input type='checkbox' id='"+id+"' data-persist>"+
+             "<label for='"+id+"'>"+esc(txt)+"</label></div>";
+    }).join("");
+    var div = document.createElement("div");
+    div.className = "cat";
+    div.innerHTML = "<h3>"+esc(cat[0])+"</h3>"+items;
+    tasksHost.appendChild(div);
+  });
+
+  /* ---- Field helpers ---- */
+  function fieldEls(){ return document.querySelectorAll("[data-persist]"); }
+  function getVal(el){ return el.type === "checkbox" ? (el.checked ? "1":"0") : el.value; }
+  function setVal(el, v){
+    if(el.type === "checkbox"){ el.checked = (v === "1" || v === true); }
+    else { el.value = (v == null ? "" : v); }
+  }
+
+  /* ---- Local cache ---- */
+  function saveLocal(){
+    var s = {};
+    fieldEls().forEach(function(el){ s[el.id] = getVal(el); });
+    try{ localStorage.setItem(STORE_KEY, JSON.stringify(s)); }catch(e){}
+  }
+  function loadLocal(){
+    try{
+      var raw = localStorage.getItem(STORE_KEY);
+      if(!raw) return;
+      var s = JSON.parse(raw);
+      fieldEls().forEach(function(el){ if(el.id in s) setVal(el, s[el.id]); });
+    }catch(e){}
+  }
+
+  /* ---- Status pill ---- */
+  var statusEl = document.getElementById("status"), statusTxt = document.getElementById("status-txt");
+  function setStatus(kind, text, syncing){
+    statusEl.className = "status " + kind + (syncing ? " syncing":"");
+    statusTxt.textContent = text;
+  }
+
+  /* ---- Cloud layer (Supabase REST) ---- */
+  var localEdit = {};        // id -> ms of last local edit (to avoid clobber)
+  var pushTimers = {};       // id -> debounce timer
+  var REST = SUPABASE_URL.replace(/\/+$/,"") + "/rest/v1/" + TABLE;
+  function headers(extra){
+    var h = { "apikey": SUPABASE_ANON_KEY, "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+              "Content-Type": "application/json" };
+    if(extra) for(var k in extra) h[k]=extra[k];
+    return h;
+  }
+
+  function cloudPush(id){
+    if(!CONFIGURED) return;
+    var el = document.getElementById(id); if(!el) return;
+    var body = [{ key: id, value: getVal(el), updated_at: new Date().toISOString() }];
+    setStatus("ok","Enregistrement…", true);
+    fetch(REST, { method:"POST", headers: headers({ "Prefer":"resolution=merge-duplicates,return=minimal" }),
+                  body: JSON.stringify(body) })
+      .then(function(r){ if(!r.ok) throw new Error(r.status); setStatus("ok","Synchronisé"); })
+      .catch(function(){ setStatus("err","Hors ligne — réessai auto"); });
+  }
+
+  function cloudPullAll(initial){
+    if(!CONFIGURED) return;
+    if(!initial) setStatus("ok","Synchronisé", true);
+    fetch(REST + "?select=key,value,updated_at", { headers: headers() })
+      .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function(rows){
+        var changed = 0;
+        rows.forEach(function(row){
+          var el = document.getElementById(row.key); if(!el) return;
+          if(el === document.activeElement) return;            // ne pas écraser ce qu'on tape
+          var remoteT = Date.parse(row.updated_at) || 0;
+          if(remoteT < (localEdit[row.key]||0)) return;        // notre édition est plus récente
+          if(getVal(el) !== (row.value==null?"":row.value)){
+            setVal(el, row.value); changed++;
+            el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
+          }
+        });
+        if(changed) saveLocal();
+        setStatus("ok","Synchronisé");
+      })
+      .catch(function(){ setStatus("err","Hors ligne — réessai auto"); });
+  }
+
+  /* ---- Wire up edits ---- */
+  function onEdit(el){
+    localEdit[el.id] = Date.now();
+    saveLocal();
+    if(CONFIGURED){
+      clearTimeout(pushTimers[el.id]);
+      pushTimers[el.id] = setTimeout(function(){ cloudPush(el.id); }, 500);
+    }
+  }
+  document.addEventListener("input", function(e){
+    if(e.target && e.target.hasAttribute && e.target.hasAttribute("data-persist")) onEdit(e.target);
+  });
+  document.addEventListener("change", function(e){
+    if(e.target && e.target.hasAttribute && e.target.hasAttribute("data-persist")) onEdit(e.target);
+  });
+
+  /* ---- Toolbar ---- */
+  document.getElementById("btn-print").addEventListener("click", function(){ window.print(); });
+  document.getElementById("btn-export").addEventListener("click", function(){
+    var s = {}; fieldEls().forEach(function(el){ s[el.id] = getVal(el); });
+    var blob = new Blob([JSON.stringify(s,null,2)], {type:"application/json"});
+    var a = document.createElement("a"), stamp = new Date().toISOString().slice(0,10);
+    a.href = URL.createObjectURL(blob); a.download = "planning-menage-zoneB-"+stamp+".json";
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 100);
+  });
+  var fileInput = document.getElementById("file-import");
+  document.getElementById("btn-import").addEventListener("click", function(){ fileInput.click(); });
+  fileInput.addEventListener("change", function(){
+    var f = fileInput.files && fileInput.files[0]; if(!f) return;
+    var reader = new FileReader();
+    reader.onload = function(){
+      try{
+        var s = JSON.parse(reader.result);
+        fieldEls().forEach(function(el){
+          if(el.id in s){ setVal(el, s[el.id]); localEdit[el.id]=Date.now(); if(CONFIGURED) cloudPush(el.id); }
+        });
+        saveLocal();
+      }catch(e){ alert("Fichier illisible : ce n'est pas une sauvegarde valide."); }
+      fileInput.value = "";
+    };
+    reader.readAsText(f);
+  });
+  document.getElementById("btn-reset").addEventListener("click", function(){
+    var msg = CONFIGURED
+      ? "Effacer toutes les saisies PARTAGÉES (pour tout le monde) ? Action irréversible."
+      : "Effacer toutes les saisies de cet appareil ? Action irréversible.";
+    if(!confirm(msg)) return;
+    fieldEls().forEach(function(el){
+      if(el.type === "checkbox") el.checked = false; else el.value = "";
+      localEdit[el.id] = Date.now();
+      if(CONFIGURED) cloudPush(el.id);
+    });
+    try{ localStorage.removeItem(STORE_KEY); }catch(e){}
+  });
+
+  /* ---- Init ---- */
+  loadLocal();                                   // affichage instantané depuis le cache
+  if(CONFIGURED){
+    document.getElementById("setup-note").hidden = true;
+    setStatus("ok","Connexion…", true);
+    cloudPullAll(true);                          // récupère la vérité partagée
+    setInterval(function(){ cloudPullAll(false); }, 4000);   // voit les modifs des autres
+    window.addEventListener("focus", function(){ cloudPullAll(false); });
+  } else {
+    document.getElementById("setup-note").hidden = false;
+    document.getElementById("hint").textContent =
+      "Mode local : les saisies restent sur cet appareil. Renseignez vos clés Supabase pour le partage.";
+    setStatus("local","Local (non partagé)");
+  }
+})();
+</script>
+</body>
+</html>
