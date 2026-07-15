@@ -5,7 +5,7 @@
 Création d'une **application web collaborative** pour gérer un planning de ménage tournant pour 5 personnes sur 6 mois, avec **synchronisation en temps réel** entre appareils et backend Supabase.
 
 **Caractéristiques principales :**
-- 🔄 Rotation automatique de 5 personnes (YE, YA, AE, RE, SE) sans répétition
+- 🔄 Rotation automatique de 5 personnes (Un, Deux, Trois, Quatre, Cinq) sans répétition
 - 📱 Responsif (mobile + desktop)
 - 🔗 Synchronisation temps réel via Supabase
 - ✅ Suivi avec cases à cocher et émargement
@@ -242,12 +242,12 @@ Service Role: [JAMAIS COMMITÉE]
 
 ### Rotation (Mathématiquement Déterminée)
 ```javascript
-const PEOPLE = ["YE", "YA", "AE", "RE", "SE"];
+const PEOPLE = ["Un", "Deux", "Trois", "Quatre", "Cinq"];
 const month = 1; // 1-6
 const offset = (month - 1) % 5;
 const rotation = PEOPLE.slice(offset).concat(PEOPLE.slice(0, offset));
-// Mois 1: [YE, YA, AE, RE, SE]
-// Mois 2: [YA, AE, RE, SE, YE]
+// Mois 1: [Un, Deux, Trois, Quatre, Cinq]
+// Mois 2: [Deux, Trois, Quatre, Cinq, Un]
 // etc.
 ```
 

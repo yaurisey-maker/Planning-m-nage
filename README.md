@@ -20,11 +20,11 @@ Un planning collaboratif et synchronisé pour gérer un **ménage tournant à 5 
 
 ## 👥 Personnes
 
-- **YE** 🟦
-- **YA** 🟦
-- **AE** 🟦
-- **RE** 🟦
-- **SE** 🟦
+- **Un** 🟦
+- **Deux** 🟦
+- **Trois** 🟦
+- **Quatre** 🟦
+- **Cinq** 🟦
 
 ## 🧼 Zone B — Salle de Bain & WC
 
@@ -45,12 +45,12 @@ Le planning couvre le nettoyage de la salle de bain et des WC avec 6 catégories
 
 | Mois | Sem. 1 | Sem. 2 | Sem. 3 | Sem. 4 | Sem. 5 |
 |------|--------|--------|--------|--------|--------|
-| 1 | YE | YA | AE | RE | SE |
-| 2 | YA | AE | RE | SE | YE |
-| 3 | AE | RE | SE | YE | YA |
-| 4 | RE | SE | YE | YA | AE |
-| 5 | SE | YE | YA | AE | RE |
-| 6 | YE | YA | AE | RE | SE |
+| 1 | Un | Deux | Trois | Quatre | Cinq |
+| 2 | Deux | Trois | Quatre | Cinq | Un |
+| 3 | Trois | Quatre | Cinq | Un | Deux |
+| 4 | Quatre | Cinq | Un | Deux | Trois |
+| 5 | Cinq | Un | Deux | Trois | Quatre |
+| 6 | Un | Deux | Trois | Quatre | Cinq |
 
 Chacun change chaque mois, personne ne reste bloqué ! ✨
 
