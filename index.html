@@ -92,6 +92,12 @@
     font-size:13px; color:#6b5320; margin:10px 0}
   .setup b{color:#5a4415}
 
+  .people-row{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:12px; padding-top:12px; border-top:1px solid var(--line)}
+  .people-row label{font-size:13px; font-weight:600; color:var(--grey)}
+  .people-row input[type=text]{border:1px solid var(--line); background:var(--white); border-radius:6px;
+    font-size:13px; padding:5px 8px; width:90px; color:var(--ink)}
+  .people-row input:focus{outline:none; border-color:var(--teal); background:#fafafa}
+
   @media (max-width:560px){ .ref-cols{grid-template-columns:1fr} .masthead h1{font-size:22px} }
   @media print{
     body{background:#fff}
@@ -112,7 +118,15 @@
     <div class="meta">
       <span><label for="annee">Année :</label>
         <input type="text" id="annee" data-persist placeholder="2026" /></span>
-      <span class="rot"><b>Rotation :</b> Un → Deux → Trois → Quatre → Cinq <span style="color:var(--grey)">(décalée chaque mois)</span></span>
+      <span class="rot"><b>Rotation :</b> <span id="rot-preview">Un → Deux → Trois → Quatre → Cinq</span> <span style="color:var(--grey)">(décalée chaque mois)</span></span>
+    </div>
+    <div class="people-row">
+      <label>Personnes :</label>
+      <input type="text" id="p1name" data-persist placeholder="P1" maxlength="15" />
+      <input type="text" id="p2name" data-persist placeholder="P2" maxlength="15" />
+      <input type="text" id="p3name" data-persist placeholder="P3" maxlength="15" />
+      <input type="text" id="p4name" data-persist placeholder="P4" maxlength="15" />
+      <input type="text" id="p5name" data-persist placeholder="P5" maxlength="15" />
     </div>
   </header>
 
@@ -156,8 +170,18 @@
 
   var TABLE = "planning";
   var STORE_KEY = "planning-menage-zoneB-6mois-v2";
-  var PEOPLE = ["Un","Deux","Trois","Quatre","Cinq"];
+  var DEFAULT_PEOPLE = ["P1","P2","P3","P4","P5"];
   var WEEKS = 5, MONTHS = 6;
+
+  function getPeople(){
+    return [
+      document.getElementById("p1name").value || DEFAULT_PEOPLE[0],
+      document.getElementById("p2name").value || DEFAULT_PEOPLE[1],
+      document.getElementById("p3name").value || DEFAULT_PEOPLE[2],
+      document.getElementById("p4name").value || DEFAULT_PEOPLE[3],
+      document.getElementById("p5name").value || DEFAULT_PEOPLE[4]
+    ];
+  }
 
   var TASK_CATS = [
     ["Lavabo & robinetterie", ["Lavabo (cuve, rebords, trop-plein)","Robinets, mitigeur, poignées","Bonde et siphon","Miroir + tablette"]],
@@ -173,7 +197,24 @@
 
   function esc(s){ return String(s).replace(/[&<>"]/g, function(c){
     return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]; }); }
-  function rotationFor(month){ var off=(month-1)%PEOPLE.length; return PEOPLE.slice(off).concat(PEOPLE.slice(0,off)); }
+  function rotationFor(month){ var people = getPeople(); var off=(month-1)%people.length; return people.slice(off).concat(people.slice(0,off)); }
+
+  function updateRotationPreview(){
+    var people = getPeople();
+    document.getElementById("rot-preview").textContent = people.join(" → ");
+  }
+
+  function updateAllBadges(){
+    // Mettre à jour tous les badges de personnes dans les tableaux
+    var badges = document.querySelectorAll("td.pers .badge");
+    var monthIdx = 0, weekIdx = 0;
+    badges.forEach(function(badge, idx){
+      var monthNum = Math.floor(idx / WEEKS) + 1;
+      var weekNum = (idx % WEEKS) + 1;
+      var rot = rotationFor(monthNum);
+      badge.textContent = rot[weekNum - 1];
+    });
+  }
 
   /* ---- Build month tables ---- */
   var monthsHost = document.getElementById("months");
@@ -301,10 +342,17 @@
     }
   }
   document.addEventListener("input", function(e){
-    if(e.target && e.target.hasAttribute && e.target.hasAttribute("data-persist")) onEdit(e.target);
+    if(e.target && e.target.hasAttribute && e.target.hasAttribute("data-persist")){
+      onEdit(e.target);
+      // Si c'est un nom de personne, mettre à jour le preview de rotation et les badges
+      if(e.target.id.match(/^p[1-5]name$/)) { updateRotationPreview(); updateAllBadges(); }
+    }
   });
   document.addEventListener("change", function(e){
-    if(e.target && e.target.hasAttribute && e.target.hasAttribute("data-persist")) onEdit(e.target);
+    if(e.target && e.target.hasAttribute && e.target.hasAttribute("data-persist")){
+      onEdit(e.target);
+      if(e.target.id.match(/^p[1-5]name$/)) { updateRotationPreview(); updateAllBadges(); }
+    }
   });
 
   /* ---- Toolbar ---- */
@@ -349,6 +397,8 @@
 
   /* ---- Init ---- */
   loadLocal();                                   // affichage instantané depuis le cache
+  updateRotationPreview();                       // affiche les noms de personnes
+  updateAllBadges();                             // mettre à jour les badges
   if(CONFIGURED){
     document.getElementById("setup-note").hidden = true;
     setStatus("ok","Connexion…", true);
