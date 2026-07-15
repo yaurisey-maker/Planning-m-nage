@@ -114,7 +114,7 @@
 <div class="wrap">
   <header class="masthead">
     <h1>Planning ménage — Suivi &amp; émargement</h1>
-    <div class="sub">Zone B · Salle de bain &amp; WC · 6 mois</div>
+    <div class="sub">Salle de bain &amp; WC · 6 mois</div>
     <div class="meta">
       <span><label for="annee">Année :</label>
         <input type="text" id="annee" data-persist placeholder="2026" /></span>
@@ -137,9 +137,6 @@
 
   <div class="toolbar">
     <button class="btn primary" id="btn-print" type="button">🖨️ Imprimer</button>
-    <button class="btn" id="btn-export" type="button">⬇️ Exporter</button>
-    <button class="btn" id="btn-import" type="button">⬆️ Importer</button>
-    <input type="file" id="file-import" accept="application/json" hidden />
     <button class="btn danger" id="btn-reset" type="button">Tout effacer</button>
     <span class="status local" id="status"><span class="dot"></span><span id="status-txt">Local</span></span>
   </div>
@@ -357,31 +354,6 @@
 
   /* ---- Toolbar ---- */
   document.getElementById("btn-print").addEventListener("click", function(){ window.print(); });
-  document.getElementById("btn-export").addEventListener("click", function(){
-    var s = {}; fieldEls().forEach(function(el){ s[el.id] = getVal(el); });
-    var blob = new Blob([JSON.stringify(s,null,2)], {type:"application/json"});
-    var a = document.createElement("a"), stamp = new Date().toISOString().slice(0,10);
-    a.href = URL.createObjectURL(blob); a.download = "planning-menage-zoneB-"+stamp+".json";
-    document.body.appendChild(a); a.click();
-    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 100);
-  });
-  var fileInput = document.getElementById("file-import");
-  document.getElementById("btn-import").addEventListener("click", function(){ fileInput.click(); });
-  fileInput.addEventListener("change", function(){
-    var f = fileInput.files && fileInput.files[0]; if(!f) return;
-    var reader = new FileReader();
-    reader.onload = function(){
-      try{
-        var s = JSON.parse(reader.result);
-        fieldEls().forEach(function(el){
-          if(el.id in s){ setVal(el, s[el.id]); localEdit[el.id]=Date.now(); if(CONFIGURED) cloudPush(el.id); }
-        });
-        saveLocal();
-      }catch(e){ alert("Fichier illisible : ce n'est pas une sauvegarde valide."); }
-      fileInput.value = "";
-    };
-    reader.readAsText(f);
-  });
   document.getElementById("btn-reset").addEventListener("click", function(){
     var msg = CONFIGURED
       ? "Effacer toutes les saisies PARTAGÉES (pour tout le monde) ? Action irréversible."
